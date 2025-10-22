@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JNV Student Verification System</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 0;
+    color: #222;
+  }
+
+  header {
+    background: #003366;
+    color: white;
+    text-align: center;
+    padding: 15px 10px;
+    position: relative;
+  }
+
+  header img {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  header p {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .container {
+    max-width: 500px;
+    margin: 25px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+
+  .container h2 {
+    text-align: center;
+    color: #003366;
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-weight: bold;
+  }
+
+  input[type="text"], input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 15px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    width: 100%;
+    background: #003366;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+
+  button:hover {
+    background: #0055a5;
+  }
+
+  .search-section {
+    margin-top: 25px;
+  }
+
+  .file-box {
+    border: 2px dashed #003366;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .file-box img, .file-box iframe {
+    width: 100%;
+    max-height: 400px;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 25px;
+    color: #555;
+    font-size: 14px;
+  }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 18px; }
+    header img { width: 50px; height: 50px; }
+    .container { margin: 10px; padding: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>JNV Student Verification System</h1>
+  <p>Upload & Verify Student Cards Locally</p>
+  <img src="logo.png" alt="Logo">
+</header>
+
+<div class="container">
+  <h2>Upload Student Card</h2>
+  <label>Admission Number:</label>
+  <input type="text" id="admissionNumber" placeholder="Enter Admission Number">
+  <label>File Name:</label>
+  <input type="text" id="fileName" placeholder="Enter File Name (optional)">
+  
+  <label>Upload Card (PDF, Excel, or Image):</label>
+  <input type="file" id="fileUpload" accept=".pdf,.xlsx,.xls,image/*" capture="environment">
+
+  <button onclick="uploadCard()">Upload</button>
+
+  <div class="search-section">
+    <h2>Search Card</h2>
+    <input type="text" id="searchAdmission" placeholder="Enter Admission Number to Search">
+    <button onclick="searchCard()">Search</button>
+
+    <div id="viewSection" class="file-box" style="display:none;">
+      <h3>Card View</h3>
+      <div id="fileViewer"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Developed by <b>Sankalp Sir</b> | JNV Verification System
+</footer>
+
+<script>
+  // Use IndexedDB for storing files locally
+  let db;
+  const request = indexedDB.open("JNVStudentDB", 1);
+
+  request.onupgradeneeded = function(e) {
+    db = e.target.result;
+    db.createObjectStore("cards", { keyPath: "admission" });
+  };
+
+  request.onsuccess = function(e) {
+    db = e.target.result;
+  };
+
+  request.onerror = function() {
+    alert("Error initializing database.");
+  };
+
+  function uploadCard() {
+    const admission = document.getElementById("admissionNumber").value.trim();
+    const fileInput = document.getElementById("fileUpload");
+    const fileName = document.getElementById("fileName").value.trim();
+
+    if (!admission || fileInput.files.length === 0) {
+      alert("Please enter admission number and select a file.");
+      return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const fileData = e.target.result;
+
+      const tx = db.transaction("cards", "readwrite");
+      const store = tx.objectStore("cards");
+      store.put({ admission, fileName: fileName || file.name, fileData, type: file.type });
+
+      tx.oncomplete = () => {
+        alert("Card uploaded successfully!");
+        fileInput.value = "";
+        document.getElementById("admissionNumber").value = "";
+        document.getElementById("fileName").value = "";
+      };
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function searchCard() {
+    const admission = document.getElementById("searchAdmission").value.trim();
+    if (!admission) {
+      alert("Please enter an admission number to search.");
+      return;
+    }
+
+    const tx = db.transaction("cards", "readonly");
+    const store = tx.objectStore("cards");
+    const request = store.get(admission);
+
+    request.onsuccess = function() {
+      const data = request.result;
+      const viewer = document.getElementById("fileViewer");
+      const viewBox = document.getElementById("viewSection");
+
+      if (!data) {
+        alert("No card found for this admission number.");
+        viewBox.style.display = "none";
+        return;
+      }
+
+      viewBox.style.display = "block";
+      if (data.type.startsWith("image/")) {
+        viewer.innerHTML = `<img src="${data.fileData}" alt="Card Image">`;
+      } else if (data.type === "application/pdf") {
+        viewer.innerHTML = `<iframe src="${data.fileData}"></iframe>`;
+      } else {
+        viewer.innerHTML = `<p>File type not viewable. You can download it.</p><a href="${data.fileData}" download="${data.fileName}">Download File</a>`;
+      }
+    };
+  }
+</script>
+
+</body>
+</html>

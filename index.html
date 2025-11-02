@@ -69,6 +69,28 @@
   .bar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.7);backdrop-filter:blur(10px);padding:10px 14px}
   .ok{color:var(--ok);font-weight:600}
 </style>
+  <!-- Cropper.js -->
+<link href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet">
+<script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
+
+<style>
+#cropModal {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.8); display: none; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+#cropBox {
+  background: #fff; padding: 10px; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  max-width: 95vw; max-height: 90vh;
+}
+#cropImg {
+  max-width: 90vw; max-height: 70vh;
+}
+.crop-btns {
+  display: flex; gap: 10px;
+}
+</style>
 </head>
 <body>
 
@@ -133,6 +155,16 @@
     <button class="lb-close" id="lbClose">✕</button>
   </div>
 </dialog>
+  <!-- Crop Modal -->
+<div id="cropModal">
+  <div id="cropBox">
+    <img id="cropImg" alt="Crop Preview">
+    <div class="crop-btns">
+      <button id="btnCropSave">Save Crop</button>
+      <button class="secondary" id="btnCropCancel">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* Config */
@@ -147,7 +179,50 @@ const EXT_FALLBACK = /\.(pdf|png|jpe?g|webp|gif|xls|xlsx)$/i;
 /* Simple (unencrypted) local DB for reliability; can switch to encrypted later */
 let db, currentKey=null, currentURL=null;
 const $ = id=>document.getElementById(id);
+  
+/* Cropper integration */
+let cropper = null;
+let croppedBlob = null;
 
+const cropModal = $("cropModal");
+const cropImg = $("cropImg");
+
+$("fileUpload").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    const reader = new FileReader();
+    reader.onload = evt => {
+      cropImg.src = evt.target.result;
+      cropModal.style.display = "flex";
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(cropImg, {
+        aspectRatio: NaN, // free crop
+        viewMode: 1,
+        autoCropArea: 1,
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+/* Save cropped image */
+$("btnCropSave").addEventListener("click", () => {
+  if (!cropper) return;
+  cropper.getCroppedCanvas().toBlob(blob => {
+    croppedBlob = blob;
+    cropper.destroy();
+    cropper = null;
+    cropModal.style.display = "none";
+    alert("Crop saved! Now click Upload Securely to store it.");
+  }, "image/jpeg", 0.95);
+});
+
+/* Cancel crop */
+$("btnCropCancel").addEventListener("click", () => {
+  if (cropper) cropper.destroy();
+  cropper = null;
+  cropModal.style.display = "none";
+});
 /* DB init */
 const openReq = indexedDB.open("JNVSecureDB", 1);
 openReq.onupgradeneeded = e => {
@@ -167,7 +242,11 @@ $("pin").addEventListener("input", e => setPinState(e.target.value.trim().length
 $("btnUpload").addEventListener("click", async ()=>{
   if($("pin").value.trim().length<6) return alert("Set a PIN (min 6 chars)");
   const admission = $("admissionNumber").value.trim();
-  const f = $("fileUpload").files[0];
+  let f = $("fileUpload").files[0];
+if (croppedBlob) {
+  f = new File([croppedBlob], f.name || "cropped.jpg", { type: "image/jpeg" });
+  croppedBlob = null;
+}];
   if(!admission || !f) return alert("Please fill all fields");
   if(f.size > MAX_BYTES) return alert("Max 25MB allowed");
   const typeOk = ALLOW_MIME.has(f.type) || EXT_FALLBACK.test(f.name);
@@ -300,4 +379,5 @@ $("btnWipe").addEventListener("click", ()=>{
 
 </body>
 </html>
+
 

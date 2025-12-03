@@ -44,7 +44,6 @@
   button.secondary{background:#2f3b52}
   button.ghost{background:transparent;color:var(--brand);box-shadow:none}
 
-  /* Viewer area */
   .viewer{display:none;flex-direction:column;gap:10px;margin-top:10px}
   .viewer.active{display:flex;animation:fadeIn .3s ease}
   @keyframes fadeIn{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
@@ -58,7 +57,6 @@
     width:100%; height:100%; border:0; object-fit:contain; background:#fff; transition:opacity .25s ease;
   }
 
-  /* Lightbox */
   dialog#lightbox{width:100vw;height:100dvh;padding:0;margin:0;border:0;background:rgba(0,0,0,.9)}
   dialog#lightbox::backdrop{background:rgba(0,0,0,.7)}
   .lb-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
@@ -66,10 +64,16 @@
   .lb-iframe{width:96vw;height:92vh;border:0;border-radius:8px;background:#fff}
   .lb-close{position:absolute;top:12px;right:16px;background:#fff;border:0;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:700}
 
-  .bar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.7);backdrop-filter:blur(10px);padding:10px 14px}
+  .bar{
+    position:fixed;bottom:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(255,255,255,.7);backdrop-filter:blur(10px);
+    padding:10px 14px;font-size:12px;
+  }
   .ok{color:var(--ok);font-weight:600}
-  
-  /* Crop Modal (kept but unused, same as your original) */
+  .bar a{color:var(--brand);text-decoration:none;font-weight:600}
+  .bar a:hover{text-decoration:underline}
+
   #cropModal{
     display:none;
     position:fixed;
@@ -121,8 +125,6 @@
   <section class="card">
     <header>
       <h2>Upload & Verify</h2>
-      <!-- Optional: small sign-in button for Google -->
-      <button id="btnSignIn" class="secondary" style="font-size:12px;padding:6px 10px;">Sign in with Google</button>
     </header>
     <div class="content">
       <label>Security PIN</label>
@@ -155,11 +157,15 @@
 </main>
 
 <nav class="bar">
-  <span id="pinState">PIN not set • Not signed in</span>
-  <!-- Wipe button removed as requested -->
+  <span id="pinState">PIN not set • Connected to JNV Drive backend</span>
+  <span>
+    View source: 
+    <a href="https://aayushsing.github.io/Student-Verification-System/" target="_blank" rel="noopener">
+      aayushsing.github.io/Student-Verification-System
+    </a>
+  </span>
 </nav>
 
-<!-- Lightbox -->
 <dialog id="lightbox">
   <div class="lb-wrap">
     <img id="lbImg" class="lb-media" style="display:none" alt="Card">
@@ -168,7 +174,6 @@
   </div>
 </dialog>
 
-<!-- Crop Modal (kept same as original, not wired) -->
 <div id="cropModal">
   <div id="cropBox">
     <img id="cropImg" alt="Crop Preview">
@@ -180,11 +185,7 @@
 </div>
 
 <script>
-/* ===================== CONFIG ===================== */
-// Max upload size
 const MAX_BYTES = 25 * 1024 * 1024;
-
-// Supported types
 const ALLOW_MIME = new Set([
   "application/pdf","image/png","image/jpeg","image/webp","image/gif",
   "application/vnd.ms-excel",
@@ -192,226 +193,27 @@ const ALLOW_MIME = new Set([
 ]);
 const EXT_FALLBACK = /\.(pdf|png|jpe?g|webp|gif|xls|xlsx)$/i;
 
-// TODO: Replace these three values with your real values
-const API_KEY        = "AIzaSyDaGqN3VWTmhXfwb0EeEwgT6pgKFUcYURw";
-const CLIENT_ID      = "194286766474-gs383hkundid0eiif9s19pca2rcjqk35.apps.googleusercontent.com";
-const DRIVE_FOLDER_ID = "https://drive.google.com/drive/folders/1MQnqrZzAyIobaQrrBJOUKYaB5E1Fgp51?usp=sharing"; // All files will be saved here
+// IMPORTANT: put your Apps Script Web App URL here:
+const SCRIPT_URL = "YOUR_WEB_APP_URL_HERE"; // e.g. "https://script.google.com/macros/s/AKfycbx.../exec"
 
-// Scopes: drive.file is enough for files created by this app
-const SCOPES = "https://www.googleapis.com/auth/drive.file";
-const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+let currentURL = null;
+let currentFileMeta = null;
 
-/* ===================== GLOBAL STATE ===================== */
-let currentURL = null;          // preview URL
-let currentFileMeta = null;     // {id,name,mimeType,webViewLink,webContentLink}
-let isSignedIn = false;
+const $ = id => document.getElementById(id);
 
-const $ = id=>document.getElementById(id);
-
-/* ===================== PIN STATE ===================== */
-function updateStatus() {
-  const pinOk = $("pin").value.trim().length >= 6;
-  $("pinState").textContent =
-    (pinOk ? "PIN ready" : "PIN not set") +
-    " • " +
-    (isSignedIn ? "Signed in to Google Drive" : "Not signed in");
+function updatePinState() {
+  const ok = $("pin").value.trim().length >= 6;
+  $("pinState").textContent = (ok ? "PIN ready" : "PIN not set") + " • Connected to JNV Drive backend";
 }
-$("pin").addEventListener("input", updateStatus);
-
-/* ===================== GOOGLE API INIT ===================== */
-
-function gapiLoaded() {
-  gapi.load("client:auth2", initClient);
-}
-
-async function initClient() {
-  try {
-    await gapi.client.init({
-      apiKey: API_KEY,
-      clientId: CLIENT_ID,
-      discoveryDocs: DISCOVERY_DOCS,
-      scope: SCOPES
-    });
-    const auth = gapi.auth2.getAuthInstance();
-    isSignedIn = auth.isSignedIn.get();
-    auth.isSignedIn.listen(val => {
-      isSignedIn = val;
-      updateStatus();
-      updateSignInButton();
-    });
-    updateStatus();
-    updateSignInButton();
-  } catch (err) {
-    console.error("Error initializing GAPI:", err);
-    alert("Google Drive API init failed. Check console & keys.");
-  }
-}
-
-function updateSignInButton() {
-  const btn = $("btnSignIn");
-  if(!btn) return;
-  btn.textContent = isSignedIn ? "Signed in" : "Sign in with Google";
-  btn.disabled = false;
-}
-
-/* Sign-in button */
-$("btnSignIn").addEventListener("click", async () => {
-  try {
-    const auth = gapi.auth2.getAuthInstance();
-    if(!auth) return;
-    if(!auth.isSignedIn.get()) {
-      await auth.signIn();
-    } else {
-      alert("Already signed in.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Sign-in failed.");
-  }
-});
-
-/* ===================== HELPERS ===================== */
-
-function guessTypeFromName(name){
-  if(/\.pdf$/i.test(name)) return "application/pdf";
-  if(/\.(png)$/i.test(name)) return "image/png";
-  if(/\.(jpe?g)$/i.test(name)) return "image/jpeg";
-  if(/\.webp$/i.test(name)) return "image/webp";
-  if(/\.gif$/i.test(name)) return "image/gif";
-  if(/\.xlsx$/i.test(name)) return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-  if(/\.xls$/i.test(name)) return "application/vnd.ms-excel";
-  return "application/octet-stream";
-}
-
-/* Build preview and download URLs from Drive file ID */
-function buildPreviewURL(file) {
-  // For PDFs & docs: Google viewer
-  if(file.mimeType === "application/pdf") {
-    return `https://drive.google.com/file/d/${file.id}/preview`;
-  }
-  // For images: direct view link
-  if(file.mimeType.startsWith("image/")) {
-    return `https://drive.google.com/uc?export=view&id=${file.id}`;
-  }
-  // Fallback: viewer
-  return `https://drive.google.com/file/d/${file.id}/preview`;
-}
-function buildDownloadURL(file) {
-  // webContentLink often works, but we can ensure with uc?export=download
-  return `https://drive.google.com/uc?export=download&id=${file.id}`;
-}
-
-/* ===================== UPLOAD TO DRIVE ===================== */
-
-async function uploadToDrive(file, admission, desiredName) {
-  if(!isSignedIn) {
-    alert("Please sign in with Google first.");
-    return null;
-  }
-
-  const fileName = desiredName || file.name;
-  const fullName = `${admission}_${fileName}`; // include admission no in name
-
-  // Build multipart request body
-  const boundary = "-------314159265358979323846";
-  const delimiter = "\r\n--" + boundary + "\r\n";
-  const closeDelim = "\r\n--" + boundary + "--";
-
-  const metadata = {
-    name: fullName,
-    parents: [DRIVE_FOLDER_ID],
-    description: `JNV card for admission ${admission}`
-  };
-
-  const contentType = file.type || guessTypeFromName(fileName);
-
-  const base64Data = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const data = btoa(e.target.result);
-      resolve(data);
-    };
-    reader.onerror = reject;
-    reader.readAsBinaryString(file);
-  });
-
-  const multipartRequestBody =
-    delimiter +
-    "Content-Type: application/json; charset=UTF-8\r\n\r\n" +
-    JSON.stringify(metadata) +
-    delimiter +
-    "Content-Type: " + contentType + "\r\n" +
-    "Content-Transfer-Encoding: base64\r\n\r\n" +
-    base64Data +
-    closeDelim;
-
-  const uploadRes = await gapi.client.request({
-    path: "/upload/drive/v3/files",
-    method: "POST",
-    params: { uploadType: "multipart" },
-    headers: {
-      "Content-Type": 'multipart/related; boundary="' + boundary + '"'
-    },
-    body: multipartRequestBody
-  });
-
-  const fileId = uploadRes.result.id;
-
-  // Make file public viewable (anyone with link)
-  await gapi.client.drive.permissions.create({
-    fileId,
-    resource: {
-      role: "reader",
-      type: "anyone"
-    }
-  });
-
-  // Fetch final metadata including web links
-  const fileRes = await gapi.client.drive.files.get({
-    fileId,
-    fields: "id,name,mimeType,webViewLink,webContentLink"
-  });
-
-  return fileRes.result;
-}
-
-/* ===================== SEARCH IN DRIVE BY ADMISSION ===================== */
-
-async function searchFileByAdmission(admission) {
-  if(!isSignedIn) {
-    alert("Please sign in with Google first.");
-    return null;
-  }
-
-  // We stored name as "admission_fileName"
-  const q = [
-    `'${DRIVE_FOLDER_ID}' in parents`,
-    "trashed=false",
-    `name contains '${admission}'`
-  ].join(" and ");
-
-  const res = await gapi.client.drive.files.list({
-    q,
-    pageSize: 1,
-    fields: "files(id,name,mimeType,webViewLink,webContentLink)"
-  });
-
-  if(!res.result.files || !res.result.files.length) {
-    return null;
-  }
-  return res.result.files[0];
-}
-
-/* ===================== VIEWER / LIGHTBOX ===================== */
+$("pin").addEventListener("input", updatePinState);
 
 function hideViewer(){
   $("viewer").classList.remove("active");
   $("fileViewer").innerHTML = "";
   $("btnDownload").style.display = "none";
-  if(currentURL){ currentURL=null; }
+  currentURL = null;
   currentFileMeta = null;
 }
-
 $("btnCloseViewer").addEventListener("click", hideViewer);
 
 const lb = $("lightbox");
@@ -419,14 +221,14 @@ const lbImg = $("lbImg");
 const lbPdf = $("lbPdf");
 
 $("lbClose").addEventListener("click", ()=> lb.close());
-lb.addEventListener("click", e=>{ if(e.target===lb) lb.close(); });
+lb.addEventListener("click", e => { if(e.target === lb) lb.close(); });
 
 function openLightbox(type, url){
   if(type === "image"){
     lbPdf.style.display="none";
     lbImg.style.display="block";
     lbImg.src = url;
-  }else{
+  } else {
     lbImg.style.display="none";
     lbPdf.style.display="block";
     lbPdf.src = url;
@@ -434,14 +236,16 @@ function openLightbox(type, url){
   if(!lb.open) lb.showModal();
 }
 
-function showDriveFile(file){
-  hideViewer(); // reset first
-
-  currentFileMeta = file;
-
-  const mime = file.mimeType || guessTypeFromName(file.name);
-  const previewUrl = buildPreviewURL(file);
-  const downloadUrl = buildDownloadURL(file);
+function showFromBackend(meta){
+  hideViewer();
+  if(meta.error){
+    alert(meta.error);
+    return;
+  }
+  currentFileMeta = meta;
+  const mime = meta.mimeType || "";
+  const previewUrl = meta.previewUrl;
+  const downloadUrl = meta.downloadUrl;
   currentURL = previewUrl;
 
   const viewer = $("fileViewer");
@@ -473,88 +277,87 @@ function showDriveFile(file){
   $("viewer").classList.add("active");
   const dl = $("btnDownload");
   dl.style.display = "inline-block";
-  dl.onclick = ()=> {
+  dl.onclick = () => {
     const a = document.createElement("a");
     a.href = downloadUrl;
-    a.download = file.name || "card";
+    a.download = meta.name || "card";
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
 
-  // Auto-open lightbox
   if(mime.startsWith("image/")) openLightbox("image", previewUrl);
   else if(mime === "application/pdf") openLightbox("pdf", previewUrl);
 }
 
-/* ===================== BUTTON HANDLERS ===================== */
-
-// Upload button
-$("btnUpload").addEventListener("click", async ()=>{
-  if($("pin").value.trim().length<6) {
+$("btnUpload").addEventListener("click", async () => {
+  if($("pin").value.trim().length < 6){
     alert("Set a PIN (min 6 chars)");
     return;
   }
-
   const admission = $("admissionNumber").value.trim();
   const f = $("fileUpload").files[0];
-
-  if(!admission || !f) {
+  if(!admission || !f){
     alert("Please fill all fields");
     return;
   }
-  if(f.size > MAX_BYTES) {
+  if(f.size > MAX_BYTES){
     alert("Max 25MB allowed");
     return;
   }
   const typeOk = ALLOW_MIME.has(f.type) || EXT_FALLBACK.test(f.name);
-  if(!typeOk) {
+  if(!typeOk){
     alert("Unsupported file type");
     return;
   }
 
   try {
-    const result = await uploadToDrive(
-      f,
-      admission,
-      $("fileName").value.trim() || f.name
-    );
-    if(result) {
-      alert("File saved to Google Drive and made public.");
+    const fd = new FormData();
+    fd.append("mode", "upload");
+    fd.append("admission", admission);
+    fd.append("fileName", $("fileName").value.trim() || f.name);
+    fd.append("file", f);
+
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: fd
+    });
+    const data = await res.json();
+    if(data.error){
+      alert("Upload failed: " + data.error);
+      return;
     }
+    alert("File saved to Google Drive.");
+    showFromBackend(data);
   } catch (err) {
-    console.error("Upload error:", err);
+    console.error(err);
     alert("Upload failed. Check console.");
   }
 });
 
-// Search button
-$("btnSearch").addEventListener("click", async ()=>{
-  const id = $("searchAdmission").value.trim();
-  if(!id) {
+$("btnSearch").addEventListener("click", async () => {
+  const admission = $("searchAdmission").value.trim();
+  if(!admission){
     alert("Enter an admission number");
     return;
   }
   try {
-    const file = await searchFileByAdmission(id);
-    if(!file) {
-      alert("No card found in Drive for this admission number.");
+    const url = SCRIPT_URL + "?mode=search&admission=" + encodeURIComponent(admission);
+    const res = await fetch(url);
+    const data = await res.json();
+    if(data.error){
+      alert(data.error);
       return;
     }
-    showDriveFile(file);
+    showFromBackend(data);
   } catch (err) {
-    console.error("Search error:", err);
+    console.error(err);
     alert("Search failed. Check console.");
   }
 });
 
-// Initial status
-updateStatus();
+updatePinState();
 </script>
-
-<!-- Load Google API JS (must be after the script above so gapiLoaded exists) -->
-<script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
 
 </body>
 </html>
-

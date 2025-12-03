@@ -71,8 +71,6 @@
     padding:10px 14px;font-size:12px;
   }
   .ok{color:var(--ok);font-weight:600}
-  .bar a{color:var(--brand);text-decoration:none;font-weight:600}
-  .bar a:hover{text-decoration:underline}
 
   #cropModal{
     display:none;
@@ -112,7 +110,7 @@
     <div class="logo"></div>
     <div class="titles">
       <h1>JNV Student Verification System</h1>
-      <p>Secure • Google Drive • On your device</p>
+      <p>Secure • Google Drive (jnvschool) • On your device</p>
     </div>
   </div>
   <div class="dev">
@@ -132,7 +130,7 @@
       <label>Admission Number</label>
       <input type="text" id="admissionNumber" placeholder="e.g. 2025XXXX">
       <label>File Name (optional)</label>
-      <input type="text" id="fileName" placeholder="StudentCard.pdf">
+      <input type="text" id="fileName" placeholder="StudentCard.pdf (for your reference only)">
       <label>Upload Card</label>
       <input type="file" id="fileUpload" accept=".pdf,.xlsx,.xls,image/*">
       <button id="btnUpload">Upload Securely</button>
@@ -157,13 +155,7 @@
 </main>
 
 <nav class="bar">
-  <span id="pinState">PIN not set • Connected to JNV Drive backend</span>
-  <span>
-    View source: 
-    <a href="https://aayushsing.github.io/Student-Verification-System/" target="_blank" rel="noopener">
-      aayushsing.github.io/Student-Verification-System
-    </a>
-  </span>
+  <span id="pinState">PIN not set • Connected to jnvschool Drive backend</span>
 </nav>
 
 <dialog id="lightbox">
@@ -203,7 +195,7 @@ const $ = id => document.getElementById(id);
 
 function updatePinState() {
   const ok = $("pin").value.trim().length >= 6;
-  $("pinState").textContent = (ok ? "PIN ready" : "PIN not set") + " • Connected to JNV Drive backend";
+  $("pinState").textContent = (ok ? "PIN ready" : "PIN not set") + " • Connected to jnvschool Drive backend";
 }
 $("pin").addEventListener("input", updatePinState);
 
@@ -327,7 +319,7 @@ $("btnUpload").addEventListener("click", async () => {
       alert("Upload failed: " + data.error);
       return;
     }
-    alert("File saved to Google Drive.");
+    alert("File saved to Drive (jnvschool).");
     showFromBackend(data);
   } catch (err) {
     console.error(err);

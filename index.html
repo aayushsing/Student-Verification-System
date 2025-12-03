@@ -327,29 +327,110 @@ $("btnUpload").addEventListener("click", async () => {
   }
 });
 
+$("btnUpload").addEventListener("click", async () => {
+  if($("pin").value.trim().length < 6){
+    alert("Set a PIN (min 6 chars)");
+    return;
+  }
+  const admission = $("admissionNumber").value.trim();
+  const f = $("fileUpload").files[0];
+  if(!admission || !f){
+    alert("Please fill all fields");
+    return;
+  }
+  if(f.size > MAX_BYTES){
+    alert("Max 25MB allowed");
+    return;
+  }
+  const typeOk = ALLOW_MIME.has(f.type) || EXT_FALLBACK.test(f.name);
+  if(!typeOk){
+    alert("Unsupported file type");
+    return;
+  }
+
+  try {
+    const fd = new FormData();
+    fd.append("mode", "upload");
+    fd.append("admission", admission);
+    fd.append("fileName", $("fileName").value.trim() || f.name);
+    fd.append("file", f);
+
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: fd
+    });
+
+    const text = await res.text();  // read raw response
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Raw response from server (not JSON):", text);
+      alert("Upload failed: server returned invalid response (status " + res.status + ").");
+      return;
+    }
+
+    if (!res.ok) {
+      console.error("Upload HTTP error:", res.status, data);
+      alert("Upload failed (HTTP " + res.status + "): " + (data.error || "Unknown error"));
+      return;
+    }
+
+    if (data.error) {
+      alert("Upload failed: " + data.error);
+      return;
+    }
+
+    alert("File saved to Drive.");
+    showFromBackend(data);
+  } catch (err) {
+    console.error("Upload fetch error:", err);
+    alert("Upload failed: " + err.message);
+  }
+});
+
 $("btnSearch").addEventListener("click", async () => {
   const admission = $("searchAdmission").value.trim();
   if(!admission){
     alert("Enter an admission number");
     return;
   }
+
   try {
     const url = SCRIPT_URL + "?mode=search&admission=" + encodeURIComponent(admission);
     const res = await fetch(url);
-    const data = await res.json();
-    if(data.error){
+    const text = await res.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Raw response from server (not JSON):", text);
+      alert("Search failed: server returned invalid response (status " + res.status + ").");
+      return;
+    }
+
+    if (!res.ok) {
+      console.error("Search HTTP error:", res.status, data);
+      alert("Search failed (HTTP " + res.status + "): " + (data.error || "Unknown error"));
+      return;
+    }
+
+    if (data.error){
       alert(data.error);
       return;
     }
+
     showFromBackend(data);
   } catch (err) {
-    console.error(err);
-    alert("Search failed. Check console.");
+    console.error("Search fetch error:", err);
+    alert("Search failed: " + err.message);
   }
 });
 
-updatePinState();
 </script>
 
 </body>
 </html>
+

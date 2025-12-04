@@ -25,26 +25,52 @@
     color:#fff; padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
   }
   .left-head{display:flex; align-items:center; gap:12px}
-  .logo{width:40px;height:40px;border-radius:50%;border:2px solid #fff;background:url('jnv.png') center/cover no-repeat}
+  .logo{
+    width:40px;height:40px;border-radius:50%;border:2px solid #fff;
+    background:url('jnv.png') center/cover no-repeat
+  }
   .titles h1{margin:0;font-size:18px}
   .titles p{margin:2px 0 0;font-size:12px;opacity:.9}
   .dev{display:flex;align-items:center;gap:8px;font-size:12px;background:rgba(255,255,255,.1);padding:6px 10px;border-radius:999px}
-  .dev img{width:28px;height:28px;border-radius:50%;background:url('sankalp.png') center/cover no-repeat;border:1px solid rgba(255,255,255,.6)}
+  .dev img{
+    width:28px;height:28px;border-radius:50%;
+    background:url('sankalp.png') center/cover no-repeat;
+    border:1px solid rgba(255,255,255,.6)
+  }
 
-  main{width:100%;max-width:920px;margin:20px auto 90px;padding:0 12px;display:grid;gap:16px;grid-template-columns:1fr}
+  main{
+    width:100%;max-width:920px;margin:20px auto 90px;
+    padding:0 12px;display:grid;gap:16px;grid-template-columns:1fr
+  }
   @media(min-width:900px){main{grid-template-columns:1.1fr .9fr}}
 
-  .card{background:var(--card);border-radius:var(--radius);box-shadow:0 6px 24px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06)}
-  .card header{padding:14px 16px;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between}
+  .card{
+    background:var(--card);border-radius:var(--radius);
+    box-shadow:0 6px 24px rgba(0,0,0,.08);
+    border:1px solid rgba(0,0,0,.06)
+  }
+  .card header{
+    padding:14px 16px;border-bottom:1px solid rgba(0,0,0,.06);
+    display:flex;align-items:center;justify-content:space-between
+  }
   .card .content{padding:16px}
   label{font-weight:600;font-size:13px}
-  input[type=text], input[type=password], input[type=file]{width:100%;padding:10px;border:1px solid #ccd3e0;border-radius:10px;font-size:14px}
+  input[type=text], input[type=password], input[type=file]{
+    width:100%;padding:10px;border:1px solid #ccd3e0;
+    border-radius:10px;font-size:14px;margin:4px 0 10px
+  }
 
-  button{background:var(--brand);color:#fff;border:0;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer}
+  button{
+    background:var(--brand);color:#fff;border:0;
+    padding:10px 14px;border-radius:10px;
+    font-weight:600;cursor:pointer;font-size:14px
+  }
   button.secondary{background:#2f3b52}
   button.ghost{background:transparent;color:var(--brand);box-shadow:none}
 
-  .viewer{display:none;flex-direction:column;gap:10px;margin-top:10px}
+  .viewer{
+    display:none;flex-direction:column;gap:10px;margin-top:10px
+  }
   .viewer.active{display:flex;animation:fadeIn .3s ease}
   @keyframes fadeIn{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
 
@@ -57,12 +83,22 @@
     width:100%; height:100%; border:0; object-fit:contain; background:#fff; transition:opacity .25s ease;
   }
 
-  dialog#lightbox{width:100vw;height:100dvh;padding:0;margin:0;border:0;background:rgba(0,0,0,.9)}
+  dialog#lightbox{
+    width:100vw;height:100dvh;padding:0;margin:0;border:0;
+    background:rgba(0,0,0,.9)
+  }
   dialog#lightbox::backdrop{background:rgba(0,0,0,.7)}
-  .lb-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+  .lb-wrap{
+    width:100%;height:100%;display:flex;align-items:center;
+    justify-content:center;position:relative
+  }
   .lb-media{max-width:96vw;max-height:92vh;object-fit:contain;border-radius:8px;background:#fff}
   .lb-iframe{width:96vw;height:92vh;border:0;border-radius:8px;background:#fff}
-  .lb-close{position:absolute;top:12px;right:16px;background:#fff;border:0;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:700}
+  .lb-close{
+    position:absolute;top:12px;right:16px;background:#fff;
+    border:0;border-radius:999px;padding:8px 12px;
+    cursor:pointer;font-weight:700
+  }
 
   .bar{
     position:fixed;bottom:0;left:0;right:0;
@@ -71,36 +107,6 @@
     padding:10px 14px;font-size:12px;
   }
   .ok{color:var(--ok);font-weight:600}
-
-  #cropModal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.7);
-    align-items:center;
-    justify-content:center;
-    z-index:1000;
-  }
-  #cropBox{
-    background:#fff;
-    padding:16px;
-    border-radius:12px;
-    max-width:90vw;
-    max-height:90vh;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-  #cropImg{
-    max-width:100%;
-    max-height:70vh;
-    object-fit:contain;
-  }
-  .crop-btns{
-    display:flex;
-    justify-content:flex-end;
-    gap:10px;
-  }
 </style>
 </head>
 <body>
@@ -127,10 +133,13 @@
     <div class="content">
       <label>Security PIN</label>
       <input type="password" id="pin" placeholder="Set or enter PIN (min 6 chars)">
+
       <label>Admission Number</label>
-      <input type="text" id="admissionNumber" placeholder="e.g. 2025XXXX">
+      <input type="text" id="admissionNumber" placeholder="e.g. 2868">
+
       <label>File Name (optional)</label>
-      <input type="text" id="fileName" placeholder="StudentCard.pdf (for your reference only)">
+      <input type="text" id="fileName" placeholder="For your reference only">
+
       <label>Upload Card</label>
       <input type="file" id="fileUpload" accept=".pdf,.xlsx,.xls,image/*">
       <button id="btnUpload">Upload Securely</button>
@@ -138,7 +147,7 @@
       <hr>
 
       <label>Search Admission Number</label>
-      <input type="text" id="searchAdmission" placeholder="Enter Admission Number">
+      <input type="text" id="searchAdmission" placeholder="Enter Admission Number (e.g. 2868)">
       <button class="secondary" id="btnSearch">Search & View</button>
 
       <div id="viewer" class="viewer">
@@ -166,272 +175,220 @@
   </div>
 </dialog>
 
-<div id="cropModal">
-  <div id="cropBox">
-    <img id="cropImg" alt="Crop Preview">
-    <div class="crop-btns">
-      <button id="btnCropSave">Save Crop</button>
-      <button class="secondary" id="btnCropCancel">Cancel</button>
-    </div>
-  </div>
-</div>
-
 <script>
-const MAX_BYTES = 25 * 1024 * 1024;
-const ALLOW_MIME = new Set([
-  "application/pdf","image/png","image/jpeg","image/webp","image/gif",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-]);
-const EXT_FALLBACK = /\.(pdf|png|jpe?g|webp|gif|xls|xlsx)$/i;
+  // ---------------- CONFIG ----------------
+  // IMPORTANT: replace with your Web App URL from Apps Script (must end with /exec)
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxr4Bui45R__f3aborQRKSPIiVa6zT83XB02ne7Guz359B6DG73zE1GJHu11ysmY0gnMQ/exec";
 
-// IMPORTANT: put your Apps Script Web App URL here:
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzobIiXZZR44Sq-GCoNadaLwkfi71F30YjBW-98fTMM425VaseSUTDh-ftIrGdFmVVw5g/exec"; // e.g. "https://script.google.com/macros/s/AKfycbx.../exec"
+  const MAX_BYTES = 25 * 1024 * 1024;
+  const ALLOW_MIME = new Set([
+    "application/pdf","image/png","image/jpeg","image/webp","image/gif",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  ]);
+  const EXT_FALLBACK = /\.(pdf|png|jpe?g|webp|gif|xls|xlsx)$/i;
 
-let currentURL = null;
-let currentFileMeta = null;
+  let currentURL = null;
+  let currentFileMeta = null;
 
-const $ = id => document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
-function updatePinState() {
-  const ok = $("pin").value.trim().length >= 6;
-  $("pinState").textContent = (ok ? "PIN ready" : "PIN not set") + " • Connected to jnvschool Drive backend";
-}
-$("pin").addEventListener("input", updatePinState);
-
-function hideViewer(){
-  $("viewer").classList.remove("active");
-  $("fileViewer").innerHTML = "";
-  $("btnDownload").style.display = "none";
-  currentURL = null;
-  currentFileMeta = null;
-}
-$("btnCloseViewer").addEventListener("click", hideViewer);
-
-const lb = $("lightbox");
-const lbImg = $("lbImg");
-const lbPdf = $("lbPdf");
-
-$("lbClose").addEventListener("click", ()=> lb.close());
-lb.addEventListener("click", e => { if(e.target === lb) lb.close(); });
-
-function openLightbox(type, url){
-  if(type === "image"){
-    lbPdf.style.display="none";
-    lbImg.style.display="block";
-    lbImg.src = url;
-  } else {
-    lbImg.style.display="none";
-    lbPdf.style.display="block";
-    lbPdf.src = url;
+  // ---------------- UI HELPERS ----------------
+  function updatePinState() {
+    const ok = $("pin").value.trim().length >= 6;
+    $("pinState").textContent =
+      (ok ? "PIN ready" : "PIN not set") + " • Connected to jnvschool Drive backend";
   }
-  if(!lb.open) lb.showModal();
-}
+  $("pin").addEventListener("input", updatePinState);
+  window.addEventListener("DOMContentLoaded", updatePinState);
 
-function showFromBackend(meta){
-  hideViewer();
-  if(meta.error){
-    alert(meta.error);
-    return;
+  function hideViewer(){
+    $("viewer").classList.remove("active");
+    $("fileViewer").innerHTML = "";
+    $("btnDownload").style.display = "none";
+    currentURL = null;
+    currentFileMeta = null;
   }
-  currentFileMeta = meta;
-  const mime = meta.mimeType || "";
-  const previewUrl = meta.previewUrl;
-  const downloadUrl = meta.downloadUrl;
-  currentURL = previewUrl;
+  $("btnCloseViewer").addEventListener("click", hideViewer);
 
-  const viewer = $("fileViewer");
-  let el;
+  const lb = $("lightbox");
+  const lbImg = $("lbImg");
+  const lbPdf = $("lbPdf");
 
-  if(mime.startsWith("image/")){
-    el = document.createElement("img");
-    el.alt = "Card";
-    el.src = previewUrl;
-    el.decoding = "async";
-    el.style.width = "100%";
-    el.style.height = "100%";
-    el.style.objectFit = "contain";
-    el.addEventListener("click", ()=> openLightbox("image", previewUrl));
-  } else if(mime === "application/pdf") {
-    el = document.createElement("iframe");
-    el.src = previewUrl;
-    el.style.width = "100%";
-    el.style.height = "100%";
-    el.addEventListener("click", ()=> openLightbox("pdf", previewUrl));
-  } else {
-    const p = document.createElement("p");
-    p.textContent = "This file cannot be previewed. Use Download.";
-    viewer.appendChild(p);
+  $("lbClose").addEventListener("click", ()=> lb.close());
+  lb.addEventListener("click", e => { if(e.target === lb) lb.close(); });
+
+  function openLightbox(type, url){
+    if(type === "image"){
+      lbPdf.style.display="none";
+      lbImg.style.display="block";
+      lbImg.src = url;
+    } else {
+      lbImg.style.display="none";
+      lbPdf.style.display="block";
+      lbPdf.src = url;
+    }
+    if(!lb.open) lb.showModal();
   }
 
-  if(el) viewer.appendChild(el);
-
-  $("viewer").classList.add("active");
-  const dl = $("btnDownload");
-  dl.style.display = "inline-block";
-  dl.onclick = () => {
-    const a = document.createElement("a");
-    a.href = downloadUrl;
-    a.download = meta.name || "card";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  if(mime.startsWith("image/")) openLightbox("image", previewUrl);
-  else if(mime === "application/pdf") openLightbox("pdf", previewUrl);
-}
-
-$("btnUpload").addEventListener("click", async () => {
-  if($("pin").value.trim().length < 6){
-    alert("Set a PIN (min 6 chars)");
-    return;
-  }
-  const admission = $("admissionNumber").value.trim();
-  const f = $("fileUpload").files[0];
-  if(!admission || !f){
-    alert("Please fill all fields");
-    return;
-  }
-  if(f.size > MAX_BYTES){
-    alert("Max 25MB allowed");
-    return;
-  }
-  const typeOk = ALLOW_MIME.has(f.type) || EXT_FALLBACK.test(f.name);
-  if(!typeOk){
-    alert("Unsupported file type");
-    return;
-  }
-
-  try {
-    const fd = new FormData();
-    fd.append("mode", "upload");
-    fd.append("admission", admission);
-    fd.append("fileName", $("fileName").value.trim() || f.name);
-    fd.append("file", f);
-
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: fd
-    });
-    const data = await res.json();
-    if(data.error){
-      alert("Upload failed: " + data.error);
+  function showFromBackend(meta){
+    hideViewer();
+    if(meta.error){
+      alert(meta.error);
       return;
     }
-    alert("File saved to Drive (jnvschool).");
-    showFromBackend(data);
-  } catch (err) {
-    console.error(err);
-    alert("Upload failed. Check console.");
-  }
-});
+    currentFileMeta = meta;
+    const mime = meta.mimeType || "";
+    const previewUrl = meta.previewUrl;
+    const downloadUrl = meta.downloadUrl;
+    currentURL = previewUrl;
 
-$("btnUpload").addEventListener("click", async () => {
-  if($("pin").value.trim().length < 6){
-    alert("Set a PIN (min 6 chars)");
-    return;
-  }
-  const admission = $("admissionNumber").value.trim();
-  const f = $("fileUpload").files[0];
-  if(!admission || !f){
-    alert("Please fill all fields");
-    return;
-  }
-  if(f.size > MAX_BYTES){
-    alert("Max 25MB allowed");
-    return;
-  }
-  const typeOk = ALLOW_MIME.has(f.type) || EXT_FALLBACK.test(f.name);
-  if(!typeOk){
-    alert("Unsupported file type");
-    return;
+    const viewer = $("fileViewer");
+    let el = null;
+
+    if(mime.startsWith("image/")){
+      el = document.createElement("img");
+      el.alt = "Card";
+      el.src = previewUrl;
+      el.decoding = "async";
+      el.style.width = "100%";
+      el.style.height = "100%";
+      el.style.objectFit = "contain";
+      el.addEventListener("click", ()=> openLightbox("image", previewUrl));
+    } else if(mime === "application/pdf") {
+      el = document.createElement("iframe");
+      el.src = previewUrl;
+      el.style.width = "100%";
+      el.style.height = "100%";
+      el.addEventListener("click", ()=> openLightbox("pdf", previewUrl));
+    } else {
+      const p = document.createElement("p");
+      p.textContent = "This file cannot be previewed. Use Download.";
+      viewer.appendChild(p);
+    }
+
+    if(el) viewer.appendChild(el);
+
+    $("viewer").classList.add("active");
+    const dl = $("btnDownload");
+    dl.style.display = "inline-block";
+    dl.onclick = () => {
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = meta.name || "card";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+
+    if(mime.startsWith("image/")) openLightbox("image", previewUrl);
+    else if(mime === "application/pdf") openLightbox("pdf", previewUrl);
   }
 
-  try {
-    const fd = new FormData();
-    fd.append("mode", "upload");
-    fd.append("admission", admission);
-    fd.append("fileName", $("fileName").value.trim() || f.name);
-    fd.append("file", f);
+  // ---------------- UPLOAD HANDLER (POST) ----------------
+  $("btnUpload").addEventListener("click", async () => {
+    if($("pin").value.trim().length < 6){
+      alert("Set a PIN (min 6 chars)");
+      return;
+    }
+    const admission = $("admissionNumber").value.trim();
+    const f = $("fileUpload").files[0];
+    if(!admission || !f){
+      alert("Please fill all fields");
+      return;
+    }
+    if(f.size > MAX_BYTES){
+      alert("Max 25MB allowed");
+      return;
+    }
+    const typeOk = ALLOW_MIME.has(f.type) || EXT_FALLBACK.test(f.name);
+    if(!typeOk){
+      alert("Unsupported file type");
+      return;
+    }
 
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: fd
-    });
-
-    const text = await res.text();  // read raw response
-
-    let data;
     try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("Raw response from server (not JSON):", text);
-      alert("Upload failed: server returned invalid response (status " + res.status + ").");
+      const fd = new FormData();
+      fd.append("mode", "upload");        // backend: mode=upload
+      fd.append("admission", admission);  // backend: e.parameter.admission
+      fd.append("fileName", $("fileName").value.trim() || f.name);
+      fd.append("file", f);               // backend: e.files.file
+
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: fd
+      });
+
+      const text = await res.text();  // raw response
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("Raw response from server (not JSON):", text);
+        alert("Upload failed: server returned invalid response (status " + res.status + ").");
+        return;
+      }
+
+      if (!res.ok) {
+        console.error("Upload HTTP error:", res.status, data);
+        alert("Upload failed (HTTP " + res.status + "): " + (data.error || "Unknown error"));
+        return;
+      }
+
+      if (data.error) {
+        alert("Upload failed: " + data.error);
+        return;
+      }
+
+      alert("File saved to Drive (jnvschool).");
+      showFromBackend(data);
+    } catch (err) {
+      console.error("Upload fetch error:", err);
+      alert("Upload failed: " + err.message);
+    }
+  });
+
+  // ---------------- SEARCH HANDLER (GET) ----------------
+  $("btnSearch").addEventListener("click", async () => {
+    const admission = $("searchAdmission").value.trim();
+    if(!admission){
+      alert("Enter an admission number");
       return;
     }
 
-    if (!res.ok) {
-      console.error("Upload HTTP error:", res.status, data);
-      alert("Upload failed (HTTP " + res.status + "): " + (data.error || "Unknown error"));
-      return;
-    }
-
-    if (data.error) {
-      alert("Upload failed: " + data.error);
-      return;
-    }
-
-    alert("File saved to Drive.");
-    showFromBackend(data);
-  } catch (err) {
-    console.error("Upload fetch error:", err);
-    alert("Upload failed: " + err.message);
-  }
-});
-
-$("btnSearch").addEventListener("click", async () => {
-  const admission = $("searchAdmission").value.trim();
-  if(!admission){
-    alert("Enter an admission number");
-    return;
-  }
-
-  try {
-    const url = SCRIPT_URL + "?mode=search&admission=" + encodeURIComponent(admission);
-    const res = await fetch(url);
-    const text = await res.text();
-
-    let data;
     try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("Raw response from server (not JSON):", text);
-      alert("Search failed: server returned invalid response (status " + res.status + ").");
-      return;
+      // backend: doGet(e) with mode=search & admission=
+      const url = SCRIPT_URL + "?mode=search&admission=" + encodeURIComponent(admission);
+      const res = await fetch(url);
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("Raw response from server (not JSON):", text);
+        alert("Search failed: server returned invalid response (status " + res.status + ").");
+        return;
+      }
+
+      if (!res.ok) {
+        console.error("Search HTTP error:", res.status, data);
+        alert("Search failed (HTTP " + res.status + "): " + (data.error || "Unknown error"));
+        return;
+      }
+
+      if (data.error){
+        alert(data.error);
+        return;
+      }
+
+      showFromBackend(data);
+    } catch (err) {
+      console.error("Search fetch error:", err);
+      alert("Search failed: " + err.message);
     }
-
-    if (!res.ok) {
-      console.error("Search HTTP error:", res.status, data);
-      alert("Search failed (HTTP " + res.status + "): " + (data.error || "Unknown error"));
-      return;
-    }
-
-    if (data.error){
-      alert(data.error);
-      return;
-    }
-
-    showFromBackend(data);
-  } catch (err) {
-    console.error("Search fetch error:", err);
-    alert("Search failed: " + err.message);
-  }
-});
-
+  });
 </script>
 
 </body>
 </html>
-
-

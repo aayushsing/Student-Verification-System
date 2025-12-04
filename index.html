@@ -83,23 +83,6 @@
     width:100%; height:100%; border:0; object-fit:contain; background:#fff; transition:opacity .25s ease;
   }
 
-  dialog#lightbox{
-    width:100vw;height:100dvh;padding:0;margin:0;border:0;
-    background:rgba(0,0,0,.9)
-  }
-  dialog#lightbox::backdrop{background:rgba(0,0,0,.7)}
-  .lb-wrap{
-    width:100%;height:100%;display:flex;align-items:center;
-    justify-content:center;position:relative
-  }
-  .lb-media{max-width:96vw;max-height:92vh;object-fit:contain;border-radius:8px;background:#fff}
-  .lb-iframe{width:96vw;height:92vh;border:0;border-radius:8px;background:#fff}
-  .lb-close{
-    position:absolute;top:12px;right:16px;background:#fff;
-    border:0;border-radius:999px;padding:8px 12px;
-    cursor:pointer;font-weight:700
-  }
-
   .bar{
     position:fixed;bottom:0;left:0;right:0;
     display:flex;justify-content:space-between;align-items:center;
@@ -116,7 +99,7 @@
     <div class="logo"></div>
     <div class="titles">
       <h1>JNV Student Verification System</h1>
-      <p>Secure • Google Drive (jnvschool) • On your device</p>
+      <p>Secure • Google Drive (jnvschool) • View Only</p>
     </div>
   </div>
   <div class="dev">
@@ -154,8 +137,7 @@
         <div class="file-box">
           <div id="fileViewer"></div>
         </div>
-        <div style="display:flex;gap:10px;">
-          <button class="ghost" id="btnDownload" style="display:none">Download</button>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
           <button class="ghost" id="btnCloseViewer">Close</button>
         </div>
       </div>
@@ -164,21 +146,13 @@
 </main>
 
 <nav class="bar">
-  <span id="pinState">PIN not set • Connected to jnvschool Drive backend</span>
+  <span id="pinState">PIN not set • Connected to jnvschool Drive backend (View Only)</span>
 </nav>
-
-<dialog id="lightbox">
-  <div class="lb-wrap">
-    <img id="lbImg" class="lb-media" style="display:none" alt="Card">
-    <iframe id="lbPdf" class="lb-iframe" style="display:none"></iframe>
-    <button class="lb-close" id="lbClose">✕</button>
-  </div>
-</dialog>
 
 <script>
   // ---------------- CONFIG ----------------
   // IMPORTANT: replace with your Web App URL from Apps Script (must end with /exec)
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxr4Bui45R__f3aborQRKSPIiVa6zT83XB02ne7Guz359B6DG73zE1GJHu11ysmY0gnMQ/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA-DqDMrG9M-fhETMHzSk1AukF7IcXgxKgNW08TXf2kfQHwGcoGyuMDIitbwWKHubWDw/exec";
 
   const MAX_BYTES = 25 * 1024 * 1024;
   const ALLOW_MIME = new Set([
@@ -197,7 +171,7 @@
   function updatePinState() {
     const ok = $("pin").value.trim().length >= 6;
     $("pinState").textContent =
-      (ok ? "PIN ready" : "PIN not set") + " • Connected to jnvschool Drive backend";
+      (ok ? "PIN ready" : "PIN not set") + " • Connected to jnvschool Drive backend (View Only)";
   }
   $("pin").addEventListener("input", updatePinState);
   window.addEventListener("DOMContentLoaded", updatePinState);
@@ -205,31 +179,10 @@
   function hideViewer(){
     $("viewer").classList.remove("active");
     $("fileViewer").innerHTML = "";
-    $("btnDownload").style.display = "none";
     currentURL = null;
     currentFileMeta = null;
   }
   $("btnCloseViewer").addEventListener("click", hideViewer);
-
-  const lb = $("lightbox");
-  const lbImg = $("lbImg");
-  const lbPdf = $("lbPdf");
-
-  $("lbClose").addEventListener("click", ()=> lb.close());
-  lb.addEventListener("click", e => { if(e.target === lb) lb.close(); });
-
-  function openLightbox(type, url){
-    if(type === "image"){
-      lbPdf.style.display="none";
-      lbImg.style.display="block";
-      lbImg.src = url;
-    } else {
-      lbImg.style.display="none";
-      lbPdf.style.display="block";
-      lbPdf.src = url;
-    }
-    if(!lb.open) lb.showModal();
-  }
 
   function showFromBackend(meta){
     hideViewer();
@@ -237,10 +190,11 @@
       alert(meta.error);
       return;
     }
+    console.log("Backend meta:", meta);
+
     currentFileMeta = meta;
     const mime = meta.mimeType || "";
     const previewUrl = meta.previewUrl;
-    const downloadUrl = meta.downloadUrl;
     currentURL = previewUrl;
 
     const viewer = $("fileViewer");
@@ -254,35 +208,17 @@
       el.style.width = "100%";
       el.style.height = "100%";
       el.style.objectFit = "contain";
-      el.addEventListener("click", ()=> openLightbox("image", previewUrl));
-    } else if(mime === "application/pdf") {
+    } else {
+      // PDFs, Excel, etc – show in iframe using Drive preview
       el = document.createElement("iframe");
       el.src = previewUrl;
+      el.setAttribute("allowfullscreen", "true");
       el.style.width = "100%";
       el.style.height = "100%";
-      el.addEventListener("click", ()=> openLightbox("pdf", previewUrl));
-    } else {
-      const p = document.createElement("p");
-      p.textContent = "This file cannot be previewed. Use Download.";
-      viewer.appendChild(p);
     }
 
-    if(el) viewer.appendChild(el);
-
+    viewer.appendChild(el);
     $("viewer").classList.add("active");
-    const dl = $("btnDownload");
-    dl.style.display = "inline-block";
-    dl.onclick = () => {
-      const a = document.createElement("a");
-      a.href = downloadUrl;
-      a.download = meta.name || "card";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    };
-
-    if(mime.startsWith("image/")) openLightbox("image", previewUrl);
-    else if(mime === "application/pdf") openLightbox("pdf", previewUrl);
   }
 
   // ---------------- UPLOAD HANDLER (POST) ----------------
@@ -357,7 +293,6 @@
     }
 
     try {
-      // backend: doGet(e) with mode=search & admission=
       const url = SCRIPT_URL + "?mode=search&admission=" + encodeURIComponent(admission);
       const res = await fetch(url);
       const text = await res.text();
